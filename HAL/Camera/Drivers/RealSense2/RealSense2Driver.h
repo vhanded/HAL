@@ -2,6 +2,8 @@
 
 #include <librealsense2/rs.hpp>
 #include <HAL/Camera/AutoExposureInterface.h>
+#include <unistd.h>
+
 
 namespace hal
 {
@@ -57,6 +59,8 @@ class RealSense2Driver : public AutoExposureInterface
     void SetEmitter(int device, double emitter) const;
 
     size_t NumDevices() const;
+
+    void SetupSyncMasterSlave();
 
   protected:
 

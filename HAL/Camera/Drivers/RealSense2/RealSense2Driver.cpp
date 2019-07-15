@@ -232,4 +232,20 @@ void RealSense2Driver::CreateMapping()
   }
 }
 
+void RealSense2Driver::SetupSyncMasterSlave(){
+    for (unsigned int i = 0; i < NumDevices(); i++)
+    {
+        if (i == 0)
+        {
+            devices_[i]->SetSyncMode(1);
+        }
+        else
+        {
+            devices_[i]->SetSyncMode(2);
+        }
+        usleep(1000000);
+    }
+}
+
+
 } // namespace hal

@@ -54,6 +54,8 @@ class RealSense2Device : public AutoExposureInterface
 
     void SetEmitter(double emitter) const;
 
+    void SetSyncMode(int mode) const;
+
   protected:
 
     void EnableAutoExposure(int channel);

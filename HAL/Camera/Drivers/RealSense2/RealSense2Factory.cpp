@@ -53,17 +53,22 @@ class RealSense2Factory : public DeviceFactory<CameraDriverInterface>
           std::make_shared<RealSense2Driver>(dims.x, dims.y, frame_rate,
           capture_color, capture_depth, capture_ir0, capture_ir1, ids);
 
-      if (capture_color)
+      for (size_t i = 0; i < driver->NumDevices(); ++i)
+      //if (capture_color)
       {
-        const int channel = capture_ir0 + capture_ir1;
-        driver->SetExposure(exposure, channel);
-        driver->SetGain(gain, channel);
+        //const int channel = capture_ir0 + capture_ir1;
+        driver->SetExposure(exposure, static_cast<int>(i));
+        driver->SetGain(gain, static_cast<int>(i));
       }
 
       for (size_t i = 0; i < driver->NumDevices(); ++i)
       {
-        driver->SetEmitter(i, emitter);
+        driver->SetEmitter(static_cast<int>(i), emitter);
       }
+
+
+      driver->SetupSyncMasterSlave();
+
 
       return driver;
     }

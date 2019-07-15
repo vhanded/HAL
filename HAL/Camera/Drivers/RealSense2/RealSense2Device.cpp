@@ -160,6 +160,14 @@ void RealSense2Device::SetEmitter(double emitter) const
   depth_sensor_.set_option(option, emitter);
 }
 
+
+void RealSense2Device::SetSyncMode(int mode) const
+{
+    depth_sensor_.set_option(RS2_OPTION_INTER_CAM_SYNC_MODE, mode);
+    std::cout << depth_sensor_.get_option(RS2_OPTION_INTER_CAM_SYNC_MODE) << std::endl;
+}
+
+
 void RealSense2Device::EnableAutoExposure(int channel)
 {
   rs2::sensor& sensor = GetSensor(channel);
@@ -189,14 +197,15 @@ void RealSense2Device::DisableAutoExposure(int channel, double exposure)
 void RealSense2Device::CaptureInfraredStream(int index, CameraMsg& images)
 {
   ImageMsg* image = images.add_image();
-  rs2::video_frame frame = frameset_.get_infrared_frame(index);
+  rs2::video_frame frame = frameset_.get_infrared_frame(0);
   const size_t bytes = frame.get_stride_in_bytes() * frame.get_height();
   image->set_timestamp(frameset_.get_timestamp());
   image->set_serial_number(serial_number_);
   image->set_width(frame.get_width());
   image->set_height(frame.get_height());
   image->set_data(frame.get_data(), bytes);
-  image->set_format(PB_LUMINANCE);
+//  image->set_format(PB_LUMINANCE);
+  image->set_format(PB_RGB);
   image->set_type(PB_UNSIGNED_BYTE);
 }
 
@@ -210,8 +219,9 @@ void RealSense2Device::CaptureColorStream(CameraMsg& images)
   image->set_width(frame.get_width());
   image->set_height(frame.get_height());
   image->set_data(frame.get_data(), bytes);
-  image->set_type(PB_UNSIGNED_BYTE);
   image->set_format(PB_RGB);
+  image->set_type(PB_UNSIGNED_BYTE);
+
 }
 
 void RealSense2Device::CaptureDepthStream(CameraMsg& images)
@@ -271,7 +281,9 @@ void RealSense2Device::ConfigurePipeline()
   if (capture_ir1_) ConfigureInfraredStream(2);
   if (capture_color_) ConfigureColorStream();
   if (capture_depth_) ConfigureDepthStream();
+  std::cout << "starting pipeline: " << std::endl;
   pipeline_->start(*configuration_);
+  std::cout << "start pipeline success" << std::endl;
 }
 
 void RealSense2Device::CreateConfiguration()
@@ -285,9 +297,10 @@ void RealSense2Device::CreateConfiguration()
 void RealSense2Device::ConfigureInfraredStream(int index)
 {
   const int rate = frame_rate_;
-  const rs2_format format = RS2_FORMAT_Y8;
+  const rs2_format format = RS2_FORMAT_RGB8;
   const rs2_stream stream = RS2_STREAM_INFRARED;
-  configuration_->enable_stream(stream, index, width_, height_, format, rate);
+
+  configuration_->enable_stream(stream, 0, width_, height_, format, rate);
 }
 
 void RealSense2Device::ConfigureColorStream()
@@ -328,7 +341,7 @@ void RealSense2Device::CreateStreams()
 void RealSense2Device::CreateInfraredStream(int index)
 {
   rs2::pipeline_profile profile = pipeline_->get_active_profile();
-  rs2::stream_profile stream = profile.get_stream(RS2_STREAM_INFRARED, index);
+  rs2::stream_profile stream = profile.get_stream(RS2_STREAM_INFRARED, 0);
   streams_.push_back(stream.as<rs2::video_stream_profile>());
 }
 
